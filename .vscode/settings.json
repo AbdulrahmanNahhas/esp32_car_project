@@ -31,7 +31,9 @@
   "files.associations": {
     "complex": "cpp",
     "nimble_port_freertos.h": "c",
-    "nimble.h": "c"
+    "nimble.h": "c",
+    "cstring": "cpp",
+    "cstdint": "cpp"
   },
   "idf.flashType": "UART",
   "idf.port": "/dev/cu.usbserial-0001",

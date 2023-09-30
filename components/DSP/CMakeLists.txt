@@ -1,2 +1,2 @@
-idf_component_register(SRCS "DSB.c"
+idf_component_register(SRCS "DSP.cpp"
                     INCLUDE_DIRS "include")

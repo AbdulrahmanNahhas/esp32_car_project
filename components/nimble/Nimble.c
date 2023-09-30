@@ -6,9 +6,6 @@ esp_err_t ret;
 static const char* tag = "Nahhas";
 static uint8_t own_addr_type;
 uint16_t conn_handle;
-uint16_t notification_handle;
-bool notify_state; // When client subscribe to notifications, the value is set to 1: Check this value before sending notifictions.
-char* notification; // You will set this value and send it as notification.
 
 TaskHandle_t project_task_handle = NULL;
 uint16_t project_handle;
@@ -101,7 +98,7 @@ void startBLE() {
 }
 void stopBLE() {
   // Below is the sequence of APIs to be called to disable/deinit NimBLE host and ESP controller:
-  ESP_LOGE(tag, "\n Stoping BLE and notification task \n");
+  ESP_LOGE(tag, "\n Stoping BLE \n");
   int ret = nimble_port_stop();
   if (ret == 0) {
     nimble_port_deinit();
@@ -125,7 +122,6 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
   },
   { 0, /* No more services. This is necessary */ },
 };
-
 static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg) {
   int rc;
 
@@ -148,34 +144,12 @@ static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_g
   }
 }
 void handle_write_command(char* command) {
-
   if (strcmp(command, "stop") == 0) {
     stopBLE();
   } else {
     printf("Received: %s\n", command);
   }
 }
-
-// ? ================ TASKS ================? //
-
-
-void red_led_task(void* pvParameters) {
-  while (1) {
-    // red_state = red_state == 0 ? 1 : 0;
-    // gpio_set_level(RED_LED, red_state);
-    printf("from task 1");
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-  }
-}
-void green_led_task(void* pvParameters) {
-  while (1) {
-    // green_state = green_state == 0 ? 1 : 0;
-    // gpio_set_level(GREEN_LED, green_state);
-    printf("from task 2");
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-  }
-}
-
 
 // ? =============== Bellow code will remain as it is =============== ? //
 
@@ -365,35 +339,6 @@ static int bleprph_gap_event(struct ble_gap_event* event, void* arg) {
     MODLOG_DFLT(INFO, "advertise complete; reason=%d",
       event->adv_complete.reason);
     bleprph_advertise();
-    return 0;
-
-  case BLE_GAP_EVENT_SUBSCRIBE:
-
-    MODLOG_DFLT(INFO, "subscribe event; cur_notify=%d\n value handle; "
-      "val_handle=%d\n"
-      "conn_handle=%d attr_handle=%d "
-      "reason=%d prevn=%d curn=%d previ=%d curi=%d\n",
-      event->subscribe.conn_handle,
-      event->subscribe.attr_handle,
-      event->subscribe.reason,
-      event->subscribe.prev_notify,
-      event->subscribe.cur_notify,
-      event->subscribe.cur_notify, notification_handle, // Client Subscribed to notification_handle
-      event->subscribe.prev_indicate,
-      event->subscribe.cur_indicate);
-
-    if (event->subscribe.attr_handle == notification_handle) {
-      printf("\nSubscribed with notification_handle =%d\n", event->subscribe.attr_handle);
-      notify_state = event->subscribe.cur_notify; // As the client is now subscribed to notifications, the value is set to 1
-      printf("notify_state=%d\n", notify_state);
-    }
-    // if (event->subscribe.attr_handle == notification_handle)
-    // {
-    //   printf("\nSubscribed with notification_handle =%d\n", event->subscribe.attr_handle);
-    //   notify_state1 = event->subscribe.cur_notify; // As the client is now subscribed to notifications, the value is set to 1
-    //   printf("notify_state=%d\n", notify_state1);
-    // }
-
     return 0;
 
   case BLE_GAP_EVENT_MTU:
