@@ -1,0 +1,29 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "build": true,
+    ".vscode": true,
+    ".devcontainer": true,
+    "sdkconfig.old": true,
+    "README.md": true,
+    "managed_components": true,
+    "dependencies.lock": true
+  },
+  "hide-files.files": [
+    "build",
+    ".vscode",
+    ".devcontainer",
+    "sdkconfig.old",
+    "README.md",
+    "managed_components",
+    "dependencies.lock"
+  ],
+  "C_Cpp.errorSquiggles": "disabled",
+  "idf.adapterTargetName": "esp32"
+}
