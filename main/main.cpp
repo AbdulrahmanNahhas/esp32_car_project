@@ -1,5 +1,5 @@
 #include "main.h"
-#include "nimble_comp.h"
+#include "nimble.h"
 
 // Create a static instance of the Main class.
 static Main main_app;

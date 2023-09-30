@@ -1,2 +1,2 @@
-idf_component_register(SRCS "ultrasonic.c"
+idf_component_register(SRCS "ultrasonic.cpp"
                     INCLUDE_DIRS "include")

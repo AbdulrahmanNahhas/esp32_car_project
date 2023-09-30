@@ -1,7 +1,6 @@
-#include "nimble_comp.h"
+#include "nimble.h"
 
 extern "C" {
-
 // ? ================ Declare some variables ================ ? //
 
 esp_err_t ret;
@@ -34,6 +33,7 @@ uint16_t min_length = 1;   // minimum length the client can write to a character
 uint16_t max_length = 700; // maximum length the client can write to a characterstic
 
 // ? ================== Heart of nimble code  ================== ? //
+
 
 void startNVS() {
   /* Initialize NVS — it is used to store PHY calibration data */
@@ -110,9 +110,9 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
         .val_handle = &handle,
       },
       { 0, /* No more characteristics in this service. This is necessary */ }
-    },
+    }
   },
-  { 0, /* No more services. This is necessary */ },
+  { 0, /* No more services. This is necessary */ }
 };
 
 static int gatt_access(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg) {
@@ -282,7 +282,9 @@ static void bleprph_advertise(void) {
   fields.name_len = strlen(name);
   fields.name_is_complete = 1;
 
-  fields.uuids16 = (ble_uuid16_t[]){ BLE_UUID16_INIT(GATT_SVR_SVC_ALERT_UUID) };
+  fields.uuids16 = (ble_uuid16_t[]) {
+    BLE_UUID16_INIT(GATT_SVR_SVC_ALERT_UUID)
+    };
   fields.num_uuids16 = 1;
   fields.uuids16_is_complete = 1;
 
@@ -424,5 +426,4 @@ void bleprph_host_task(void* param) {
 }
 
 // ? ===================================================== ? //
-
 }

@@ -1,1 +1,5 @@
-void func(void);
+#pragma once
+
+extern "C" {
+  void func(void);
+}

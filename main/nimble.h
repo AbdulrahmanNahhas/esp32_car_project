@@ -1,5 +1,6 @@
 #pragma once
 
+extern "C" {
 // ? =================== Include necessary libraries =================== ? //
 #include <stdbool.h>
 #include <assert.h>
@@ -32,7 +33,7 @@
 // ? =================== Misc Functions =================== ? //
 
 void print_bytes(const uint8_t *bytes, int len);
-void print_addr(const void *addr);
+void print_addr(const uint8_t* addr);
 
 // ? =================== Global variables =================== ? //
 
@@ -95,3 +96,4 @@ void vTasksendNotification();
 
 /* Handles a write command from the client. This function can be used to implement various features on the device, such as controlling LEDs or motors. */
 void handle_write_command(char *command);
+}

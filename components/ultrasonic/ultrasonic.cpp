@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "ultrasonic.h"
 
-void func(void)
-{
+void func(void) {
 
 }

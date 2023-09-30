@@ -25,5 +25,8 @@
     "dependencies.lock"
   ],
   "C_Cpp.errorSquiggles": "disabled",
-  "idf.adapterTargetName": "esp32"
+  "idf.adapterTargetName": "esp32",
+  "files.associations": {
+    "complex": "cpp"
+  }
 }
