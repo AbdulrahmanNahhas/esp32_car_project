@@ -12,8 +12,9 @@
     ".devcontainer": true,
     "sdkconfig.old": true,
     "README.md": true,
+    "dependencies.lock": true,
     "managed_components": true,
-    "dependencies.lock": true
+    "main/Kconfig.projbuild": true
   },
   "hide-files.files": [
     "build",
@@ -21,12 +22,21 @@
     ".devcontainer",
     "sdkconfig.old",
     "README.md",
+    "dependencies.lock",
     "managed_components",
-    "dependencies.lock"
+    "main/Kconfig.projbuild"
   ],
   "C_Cpp.errorSquiggles": "disabled",
   "idf.adapterTargetName": "esp32",
   "files.associations": {
-    "complex": "cpp"
+    "complex": "cpp",
+    "nimble_port_freertos.h": "c",
+    "nimble.h": "c"
+  },
+  "idf.flashType": "UART",
+  "idf.port": "/dev/cu.usbserial-0001",
+  "editor.tokenColorCustomizations": {
+    "comments": "",
+    "textMateRules": []
   }
 }

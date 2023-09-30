@@ -1,6 +1,5 @@
 #include "nimble.h"
 
-extern "C" {
 // ? ================ Declare some variables ================ ? //
 
 esp_err_t ret;
@@ -11,21 +10,35 @@ uint16_t notification_handle;
 bool notify_state; // When client subscribe to notifications, the value is set to 1: Check this value before sending notifictions.
 char* notification; // You will set this value and send it as notification.
 
-TaskHandle_t task_handle = NULL;
-uint16_t handle;
-bool red_blink = false, green_blink = false;
-int red_state = 0, green_state = 0;
+TaskHandle_t project_task_handle = NULL;
+uint16_t project_handle;
+
+// Utility function to log an array of bytes. //
+void print_bytes(const uint8_t* bytes, int len) {
+    int i;
+
+    for (i = 0; i < len; i++) {
+        MODLOG_DFLT(INFO, "%s0x%02x", i != 0 ? ":" : "", bytes[i]);
+    }
+}
+void print_addr(const void* addr) {
+    const uint8_t* u8p;
+
+    u8p = addr;
+    MODLOG_DFLT(INFO, "%02x:%02x:%02x:%02x:%02x:%02x",
+        u8p[5], u8p[4], u8p[3], u8p[2], u8p[1], u8p[0]);
+}
+
 
 // ? ====================== Define UUID ===================== ? //
+
 
 // Service UUID: 9BAEF896-9532-AAAF-654F-4AF39DAB76C0
 static const ble_uuid128_t gatt_svr_svc_uuid = BLE_UUID128_INIT(0xc0, 0x76, 0xab, 0x9d, 0xf3, 0x4a, 0x4f, 0x65, 0xaf, 0xaa, 0x32, 0x95, 0x96, 0xf8, 0xae, 0x9b);
 // Characteristic 1: BA959EA8-1608-C48D-D642-6946BA0CF9EF
-static const ble_uuid128_t gatt_svr_chr_uuid_red_led = BLE_UUID128_INIT(0xef, 0xf9, 0x0c, 0xba, 0x46, 0x69, 0x42, 0xd6, 0x8d, 0xc4, 0x08, 0x16, 0xa8, 0x9e, 0x95, 0xba);
-// Characteristic 2: 12D37772-7EC0-8E84-B445-0F6E01B0D1E6
-static const ble_uuid128_t gatt_svr_chr_uuid_green_led = BLE_UUID128_INIT(0xe6, 0xd1, 0xb0, 0x01, 0x6e, 0x0f, 0x45, 0xb4, 0x84, 0x8e, 0xc0, 0x7e, 0x72, 0x77, 0xd3, 0x12);
+static const ble_uuid128_t gatt_svr_chr_uuid = BLE_UUID128_INIT(0xef, 0xf9, 0x0c, 0xba, 0x46, 0x69, 0x42, 0xd6, 0x8d, 0xc4, 0x08, 0x16, 0xa8, 0x9e, 0x95, 0xba);
 
-// ? ======== Some variables used in service and characteristic declaration ======= ? //
+// ? ==== Some variables used in service and characteristic declaration === ? //
 
 char characteristic_value[50] = "Hello world!";  // When client read characteristic, he get this value. You can also set this value in your code.
 char characteristic_received_value[500];         // When client write to characteristic , he set value of this. You can read it in code.
@@ -33,7 +46,6 @@ uint16_t min_length = 1;   // minimum length the client can write to a character
 uint16_t max_length = 700; // maximum length the client can write to a characterstic
 
 // ? ================== Heart of nimble code  ================== ? //
-
 
 void startNVS() {
   /* Initialize NVS — it is used to store PHY calibration data */
@@ -50,7 +62,7 @@ void startBLE() {
 
   ESP_ERROR_CHECK(ret);
   ESP_ERROR_CHECK(nimble_port_init());
- 
+
   /* Initialize the NimBLE host configuration. */
   ble_hs_cfg.reset_cb = bleprph_on_reset;
   ble_hs_cfg.sync_cb = bleprph_on_sync;
@@ -90,7 +102,6 @@ void startBLE() {
 void stopBLE() {
   // Below is the sequence of APIs to be called to disable/deinit NimBLE host and ESP controller:
   ESP_LOGE(tag, "\n Stoping BLE and notification task \n");
-  // // vTaskDelete(xHandle);
   int ret = nimble_port_stop();
   if (ret == 0) {
     nimble_port_deinit();
@@ -104,18 +115,18 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
     .uuid = &gatt_svr_svc_uuid.u,
     .characteristics = (struct ble_gatt_chr_def[]){
       {
-        .uuid = &gatt_svr_chr_uuid_red_led.u,
-        .access_cb = gatt_access,
+        .uuid = &gatt_svr_chr_uuid.u,
+        .access_cb = gatt__access,
+        .val_handle = &project_handle,
         .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
-        .val_handle = &handle,
       },
       { 0, /* No more characteristics in this service. This is necessary */ }
-    }
+    },
   },
-  { 0, /* No more services. This is necessary */ }
+  { 0, /* No more services. This is necessary */ },
 };
 
-static int gatt_access(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg) {
+static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg) {
   int rc;
 
   switch (ctxt->op) {
@@ -137,6 +148,7 @@ static int gatt_access(uint16_t conn_handle, uint16_t attr_handle, struct ble_ga
   }
 }
 void handle_write_command(char* command) {
+
   if (strcmp(command, "stop") == 0) {
     stopBLE();
   } else {
@@ -144,24 +156,28 @@ void handle_write_command(char* command) {
   }
 }
 
-// ? ======== Utility function to log an array of bytes ======== ? // 
+// ? ================ TASKS ================? //
 
-void print_bytes(const uint8_t* bytes, int len) {
-    int i;
 
-    for (i = 0; i < len; i++) {
-        MODLOG_DFLT(INFO, "%s0x%02x", i != 0 ? ":" : "", bytes[i]);
-    }
+void red_led_task(void* pvParameters) {
+  while (1) {
+    // red_state = red_state == 0 ? 1 : 0;
+    // gpio_set_level(RED_LED, red_state);
+    printf("from task 1");
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
 }
-void print_addr(const uint8_t* addr) {
-    const uint8_t* u8p;
-
-    u8p = addr;
-    MODLOG_DFLT(INFO, "%02x:%02x:%02x:%02x:%02x:%02x",
-        u8p[5], u8p[4], u8p[3], u8p[2], u8p[1], u8p[0]);
+void green_led_task(void* pvParameters) {
+  while (1) {
+    // green_state = green_state == 0 ? 1 : 0;
+    // gpio_set_level(GREEN_LED, green_state);
+    printf("from task 2");
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+  }
 }
 
-// ? =============== No need to change (I think) =============== ? //
+
+// ? =============== Bellow code will remain as it is =============== ? //
 
 static int gatt_svr_chr_write(struct os_mbuf* om, uint16_t min_len, uint16_t max_len, void* dst, uint16_t* len) {
   uint16_t om_len;
@@ -282,9 +298,7 @@ static void bleprph_advertise(void) {
   fields.name_len = strlen(name);
   fields.name_is_complete = 1;
 
-  fields.uuids16 = (ble_uuid16_t[]) {
-    BLE_UUID16_INIT(GATT_SVR_SVC_ALERT_UUID)
-    };
+  fields.uuids16 = (ble_uuid16_t[]){ BLE_UUID16_INIT(GATT_SVR_SVC_ALERT_UUID) };
   fields.num_uuids16 = 1;
   fields.uuids16_is_complete = 1;
 
@@ -426,4 +440,3 @@ void bleprph_host_task(void* param) {
 }
 
 // ? ===================================================== ? //
-}
