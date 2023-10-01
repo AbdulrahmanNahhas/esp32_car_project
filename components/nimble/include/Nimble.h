@@ -17,7 +17,6 @@
 #include "nimble/ble.h"
 #include "modlog/modlog.h"
 
-
 // ===== GATT server ===== //
 #define GATT_SVR_SVC_ALERT_UUID               0x1811
 #define GATT_SVR_CHR_SUP_NEW_ALERT_CAT_UUID   0x2A47
@@ -63,6 +62,7 @@ void gatt_svr_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg); /* Ca
 
 int gatt_svr_init(void); /* Initializes the GATT server. This function must be called before any GATT services can be registered or used. */
 
-void handle_write_command(char *command); /* Handles a write command from the client. This function can be used to implement various features on the device, such as controlling LEDs or motors. */
+// // void handle_write_command(char *command); /* Handles a write command from the client. This function can be used to implement various features on the device, such as controlling LEDs or motors. */
+
 
 // ? ==================================================================== ? //

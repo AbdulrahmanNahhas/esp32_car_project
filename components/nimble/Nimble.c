@@ -1,4 +1,4 @@
-#include "nimble.h"
+#include "Nimble.h"
 
 // ? ================ Declare some variables ================ ? //
 
@@ -12,18 +12,18 @@ uint16_t project_handle;
 
 // Utility function to log an array of bytes. //
 void print_bytes(const uint8_t* bytes, int len) {
-    int i;
+  int i;
 
-    for (i = 0; i < len; i++) {
-        MODLOG_DFLT(INFO, "%s0x%02x", i != 0 ? ":" : "", bytes[i]);
-    }
+  for (i = 0; i < len; i++) {
+    MODLOG_DFLT(INFO, "%s0x%02x", i != 0 ? ":" : "", bytes[i]);
+  }
 }
 void print_addr(const void* addr) {
-    const uint8_t* u8p;
+  const uint8_t* u8p;
 
-    u8p = addr;
-    MODLOG_DFLT(INFO, "%02x:%02x:%02x:%02x:%02x:%02x",
-        u8p[5], u8p[4], u8p[3], u8p[2], u8p[1], u8p[0]);
+  u8p = addr;
+  MODLOG_DFLT(INFO, "%02x:%02x:%02x:%02x:%02x:%02x",
+    u8p[5], u8p[4], u8p[3], u8p[2], u8p[1], u8p[0]);
 }
 
 
@@ -122,38 +122,40 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
   },
   { 0, /* No more services. This is necessary */ },
 };
+
 static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg) {
   int rc;
 
   switch (ctxt->op) {
-    // In case user accessed this characterstic to ( read ) its value
-  case BLE_GATT_ACCESS_OP_READ_CHR:
+  // In case user accessed this characterstic to ( read ) its value
+  case BLE_GATT_ACCESS_OP_READ_CHR: {
     rc = os_mbuf_append(ctxt->om, &characteristic_value, sizeof characteristic_value);
-    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
 
-    // In case user accessed this characterstic to ( write )
-  case BLE_GATT_ACCESS_OP_WRITE_CHR:
+    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  }
+
+  
+  // In case user accessed this characterstic to ( write )
+  case BLE_GATT_ACCESS_OP_WRITE_CHR: {
     rc = gatt_svr_chr_write(ctxt->om, min_length, max_length, &characteristic_received_value, NULL); // Function "gatt_svr_chr_write" will fire.
-    handle_write_command(characteristic_received_value); // write commands
-    memset(characteristic_received_value, 0, sizeof(characteristic_received_value));  // clear the buffer (problem fixed)
+
+    // // handle_write_command(characteristic_received_value); // write commands
+    
+    // clear the buffer
+    memset(characteristic_received_value, 0, sizeof(characteristic_received_value)); 
 
     return rc;
+  }
   default:
     assert(0);
     return BLE_ATT_ERR_UNLIKELY;
   }
 }
-void handle_write_command(char* command) {
-  if (strcmp(command, "stop") == 0) {
-    stopBLE();
-  } else {
-    printf("Received: %s\n", command);
-  }
-}
 
-// ? =============== Bellow code will remain as it is =============== ? //
+// ? ================== No need to change (I think)  ================== ? //
 
-static int gatt_svr_chr_write(struct os_mbuf* om, uint16_t min_len, uint16_t max_len, void* dst, uint16_t* len) {
+static int gatt_svr_chr_write(struct os_mbuf* om, uint16_t min_len, uint16_t max_len, void* dst, uint16_t* len)
+{
   uint16_t om_len;
   int rc;
 
@@ -384,4 +386,4 @@ void bleprph_host_task(void* param) {
   nimble_port_freertos_deinit();
 }
 
-// ? ===================================================== ? //
+// ? ===================================================== ? //        

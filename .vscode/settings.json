@@ -33,7 +33,12 @@
     "nimble_port_freertos.h": "c",
     "nimble.h": "c",
     "cstring": "cpp",
-    "cstdint": "cpp"
+    "cstdint": "cpp",
+    "ble_uuid.h": "c",
+    "compare": "c",
+    "cjson.h": "c",
+    "esp_log.h": "c",
+    "console.h": "c"
   },
   "idf.flashType": "UART",
   "idf.port": "/dev/cu.usbserial-0001",
