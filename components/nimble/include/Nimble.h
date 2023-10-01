@@ -1,3 +1,10 @@
+#ifndef NIMBLE_H
+#define NIMBLE_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,6 +23,7 @@
 #include <stdbool.h>
 #include "nimble/ble.h"
 #include "modlog/modlog.h"
+#include "../../../config.h"
 
 // ===== GATT server ===== //
 #define GATT_SVR_SVC_ALERT_UUID               0x1811
@@ -25,10 +33,9 @@
 #define GATT_SVR_CHR_UNR_ALERT_STAT_UUID      0x2A45
 #define GATT_SVR_CHR_ALERT_NOT_CTRL_PT        0x2A44
 
-
 // ===== Misc ===== //
 void print_bytes(const uint8_t *bytes, int len);
-void print_addr(const void *addr);
+void print_addr(const uint8_t *addr);
 
 extern TaskHandle_t xHandle;
 struct ble_hs_cfg;
@@ -64,5 +71,8 @@ int gatt_svr_init(void); /* Initializes the GATT server. This function must be c
 
 // // void handle_write_command(char *command); /* Handles a write command from the client. This function can be used to implement various features on the device, such as controlling LEDs or motors. */
 
+#ifdef __cplusplus
+}
+#endif
 
-// ? ==================================================================== ? //
+#endif

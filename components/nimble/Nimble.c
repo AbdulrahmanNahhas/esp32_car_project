@@ -1,3 +1,7 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "Nimble.h"
 
 // ? ================ Declare some variables ================ ? //
@@ -9,6 +13,7 @@ uint16_t conn_handle;
 
 TaskHandle_t project_task_handle = NULL;
 uint16_t project_handle;
+char json_string[500];
 
 // Utility function to log an array of bytes. //
 void print_bytes(const uint8_t* bytes, int len) {
@@ -18,14 +23,13 @@ void print_bytes(const uint8_t* bytes, int len) {
     MODLOG_DFLT(INFO, "%s0x%02x", i != 0 ? ":" : "", bytes[i]);
   }
 }
-void print_addr(const void* addr) {
+void print_addr(const uint8_t* addr) {
   const uint8_t* u8p;
 
   u8p = addr;
   MODLOG_DFLT(INFO, "%02x:%02x:%02x:%02x:%02x:%02x",
     u8p[5], u8p[4], u8p[3], u8p[2], u8p[1], u8p[0]);
 }
-
 
 // ? ====================== Define UUID ===================== ? //
 
@@ -37,7 +41,7 @@ static const ble_uuid128_t gatt_svr_chr_uuid = BLE_UUID128_INIT(0xef, 0xf9, 0x0c
 
 // ? ==== Some variables used in service and characteristic declaration === ? //
 
-char characteristic_value[50] = "Hello world!";  // When client read characteristic, he get this value. You can also set this value in your code.
+char characteristic_value[500] = "Hello world!";  // When client read characteristic, he get this value. You can also set this value in your code.
 char characteristic_received_value[500];         // When client write to characteristic , he set value of this. You can read it in code.
 uint16_t min_length = 1;   // minimum length the client can write to a characterstic
 uint16_t max_length = 700; // maximum length the client can write to a characterstic
@@ -129,6 +133,13 @@ static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_g
   switch (ctxt->op) {
   // In case user accessed this characterstic to ( read ) its value
   case BLE_GATT_ACCESS_OP_READ_CHR: {
+    if(xQueueReceive(data_bus.queue_recieve, (void *)&json_string, 0) == pdPASS) {
+      printf("I received data from DSP");
+  
+      strcpy(characteristic_value, json_string);
+    }
+
+    // Copy the JSON string to the BLE characteristic value.
     rc = os_mbuf_append(ctxt->om, &characteristic_value, sizeof characteristic_value);
 
     return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
@@ -387,3 +398,8 @@ void bleprph_host_task(void* param) {
 }
 
 // ? ===================================================== ? //        
+
+
+#ifdef __cplusplus
+}
+#endif

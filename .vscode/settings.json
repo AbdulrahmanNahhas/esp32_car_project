@@ -38,7 +38,13 @@
     "compare": "c",
     "cjson.h": "c",
     "esp_log.h": "c",
-    "console.h": "c"
+    "console.h": "c",
+    "ble_svc_gatt.h": "c",
+    "esp_nimble_hci.h": "c",
+    "stdio.h": "c",
+    "dsp.h": "c",
+    "json.h": "c",
+    "config.h": "c"
   },
   "idf.flashType": "UART",
   "idf.port": "/dev/cu.usbserial-0001",
