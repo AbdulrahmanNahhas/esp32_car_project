@@ -4,32 +4,33 @@ DSP::DSP(struct json_bus* data) {
   data_bus = data;
 
   printf("DSB Task Created!!");
-  xTaskCreate(dsb_task, "DSP_Task", 4096, NULL, 1, NULL);
+  xTaskCreate(&dsb_task, "DSP_Task", 4096, (void *)this, 1, NULL);
 }
 
-static void DSP::dsb_task(void *parameter) {
+void DSP::dsb_task(void *parameter) {
+  DSP* dsp = (DSP*) (parameter);
+
   while(1) {
     // When recieve data from React-Native
-    if(xQueueReceive(data_bus->queue_send, (void *)&json_string, 0) == pdPASS) {
+    if(xQueueReceive(dsp->data_bus->queue_send, (void *)&dsp->json_string, 0) == pdPASS) {
       printf("I received data from nimble\n");
 
-
-      value = json.parse_json_objects(json_string);
+      dsp->value = dsp->json.parse_json_objects(dsp->json_string);
 
       printf("Values Updated From User \n");
-      printf("direction value: %d \n", value);
+      printf("direction value: %d \n", dsp->value);
 
-      if (value == directions::stop) {
+      if (dsp->value == directions::stop) {
         printf("Stopping...\n");
       }
     }
 
     // Update the data
-    json.update_values(50, 12204, -12103);
-    strcpy(json_string, json.print());
+    dsp->json.update_values(50, 12204, -12103);
+    strcpy(dsp->json_string, dsp->json.print());
 
     // Send data to Nimble
-    if (xQueueSend(data_bus->queue_recieve, (void *)&json_string, 10) != pdPASS) {
+    if (xQueueSend(dsp->data_bus->queue_recieve, (void *)&dsp->json_string, 10) != pdPASS) {
       printf("ERROR: Could not put item on delay queue.\n");
     }
 
