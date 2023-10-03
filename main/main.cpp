@@ -1,9 +1,5 @@
 #include "main.h"
-#include "../config.h"
-
-extern "C" {
-#include "Nimble.h"
-}
+#include <esp_system.h>
 
 // Create a static instance of the Main class.
 static Main main_app;
@@ -17,13 +13,12 @@ extern "C" void app_main(void) {
 esp_err_t Main::setup(void) {
   esp_err_t status{ ESP_OK };
 
-  data_bus.queue_send = xQueueCreate(500, 10);
-  data_bus.queue_recieve = xQueueCreate(500, 10);
-
-  // xTaskCreate(task)
+  data_bus.queue_recieve = xQueueCreate(1, sizeof(char[100]));
+  data_bus.queue_send = xQueueCreate(1, sizeof(char[100]));
+  dsp = new DSP(&data_bus);
 
   startNVS();
-  startBLE();
+  startBLE(&data_bus);
 
   return status;
 }

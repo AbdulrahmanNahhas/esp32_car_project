@@ -1,20 +1,20 @@
-// // #pragma once
+#pragma once
 
-// // extern "C" {
-// //   #include "../../../config.h"
-// //   #include "freertos/FreeRTOS.h"
-// //   #include "freertos/queue.h"
-// //   #include "freertos/task.h"
-// //   #include "esp_log.h"
-// // }
-// // #include "JSON.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
+#include "freertos/task.h"
 
-// // class DSP {
-// //   JSON json;
-// //   char json_string[500];
+#include <cstring>
+#include "../../../config.h"
+#include "JSON.h"
 
-// //   public:
-// //     DSP();
-// //     void task(void *parameter);
-// //     ~DSP();
-// // };
+class DSP {
+  char json_string[100];
+  JSON json;
+  static struct json_bus* data_bus;
+  int value;
+
+  public:
+    DSP(struct json_bus* data);
+    static void dsb_task(void *parameter);
+};

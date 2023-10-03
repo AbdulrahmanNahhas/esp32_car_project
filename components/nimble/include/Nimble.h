@@ -43,7 +43,7 @@ struct ble_gatt_register_ctxt;
 
 // ? ==================================================================== ? //
 
-void startBLE(); /* Starts the BLE stack and initializes the BLE host task. */
+void startBLE(struct json_bus* data); /* Starts the BLE stack and initializes the BLE host task. */
 
 void stopBLE(); /* Stops the BLE stack and deinitializes the BLE host task. */
 

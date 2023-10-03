@@ -1,8 +1,12 @@
 #include "JSON.h"
 
-JSON::JSON(void) {
-  *root = cJSON_CreateObject();
-  *gps = cJSON_CreateObject();
+JSON::JSON() {
+  root = cJSON_CreateObject();
+  gps = cJSON_CreateObject();
+  cJSON_AddNumberToObject(gps, "latitude", latitude);
+  cJSON_AddNumberToObject(gps, "longitude", longitude);
+  cJSON_AddItemToObject(root, "GPS", gps);
+  cJSON_AddNumberToObject(root, "distance", distance);
 }
 
 /* When user Write
@@ -10,13 +14,23 @@ JSON::JSON(void) {
 
   ? Example:  
   {
-    move: true | false
+    move: 0 | 1
     direction: “forward” | “backward” | “right” | “left”
   }
-
 */
-void JSON::save_objects(char *json_string) {
+int JSON::parse_json_objects(char *json_string) {
+  // Create a cJSON object to represent the JSON object
+  cJSON *root = cJSON_Parse(json_string);
 
+  // Check if the JSON object was parsed successfully
+  if (root == NULL) {
+    printf("Error parsing JSON object.\n");
+    return 0;
+  }
+
+  direction = cJSON_GetObjectItem(root, "direction")->valueint;
+
+  return direction;
 }
 
 /* When user Read
@@ -30,22 +44,23 @@ void JSON::save_objects(char *json_string) {
 
 */
 void JSON::update_values(int Distance, double Latitude, double Longitude) {
-  latitude = Latitude;
-  longitude = Longitude;
-  distance = Distance;
+  latitude += 9; // // Latitude
+  longitude += 9; // // Longitude
+  distance += 2; // // Distance
 
-  cJSON_AddNumberToObject(gps, "latitude", latitude);
-  cJSON_AddNumberToObject(gps, "longitude", longitude);
-  cJSON_AddItemToObject(root, "GPS", gps);
-  cJSON_AddNumberToObject(root, "distance", distance);
+  cJSON_SetNumberValue(cJSON_GetObjectItem(gps, "latitude"), latitude);
+  cJSON_SetNumberValue(cJSON_GetObjectItem(gps, "longitude"), longitude);
+  cJSON_SetNumberValue(cJSON_GetObjectItem(root, "distance"), distance);
 }
-char JSON::print() {
-  char *json_string = cJSON_Print(root);
+char* JSON::print() {
+  char* json_string = cJSON_Print(root);
+  printf("\n");
   printf(json_string);
+  printf("\n");
   return json_string;
 }
 
-JSON::~JSON(void) {
+JSON::~JSON() {
   cJSON_Delete(gps);
   cJSON_Delete(root);
 }

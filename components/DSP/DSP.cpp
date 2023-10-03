@@ -1,23 +1,38 @@
-// // #include "DSP.h"
+#include "DSP.h"
 
-// // static const char *TAG = "DSP";
+DSP::DSP(struct json_bus* data) {
+  data_bus = data;
 
-// //  void DSP::task(void *parameter) {
-// //   while(1) {
-    // // When recieve data from React-Native
-// //     if(xQueueReceive(data_bus.queue_recieve, (void *)&json_string, 0) == pdPASS) {
-// //       LOGI(TAG, "I received data from nimble");
-// //     }
+  printf("DSB Task Created!!");
+  xTaskCreate(dsb_task, "DSP_Task", 4096, NULL, 1, NULL);
+}
 
-    // // Update the data
-// //     json.update_values(50, 12204, -12103);
-// //     json_string = json.print();
+static void DSP::dsb_task(void *parameter) {
+  while(1) {
+    // When recieve data from React-Native
+    if(xQueueReceive(data_bus->queue_send, (void *)&json_string, 0) == pdPASS) {
+      printf("I received data from nimble\n");
 
-    // // Send data to Nimble
-// //     if (xQueueSend(data_bus.queue_send, (void *)&json_string, 10) != pdPASS) {
-// //       LOGI(TAG, "ERROR: Could not put item on delay queue.");
-// //     }
 
-// //     vTaskDelay(pdMS_TO_TICKS(50));
-// //   }
-// // }
+      value = json.parse_json_objects(json_string);
+
+      printf("Values Updated From User \n");
+      printf("direction value: %d \n", value);
+
+      if (value == directions::stop) {
+        printf("Stopping...\n");
+      }
+    }
+
+    // Update the data
+    json.update_values(50, 12204, -12103);
+    strcpy(json_string, json.print());
+
+    // Send data to Nimble
+    if (xQueueSend(data_bus->queue_recieve, (void *)&json_string, 10) != pdPASS) {
+      printf("ERROR: Could not put item on delay queue.\n");
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(1000));
+  }
+}

@@ -13,7 +13,9 @@ uint16_t conn_handle;
 
 TaskHandle_t project_task_handle = NULL;
 uint16_t project_handle;
-char json_string[500];
+char json_string[100];
+int value;
+struct json_bus* data_bus;
 
 // Utility function to log an array of bytes. //
 void print_bytes(const uint8_t* bytes, int len) {
@@ -41,8 +43,8 @@ static const ble_uuid128_t gatt_svr_chr_uuid = BLE_UUID128_INIT(0xef, 0xf9, 0x0c
 
 // ? ==== Some variables used in service and characteristic declaration === ? //
 
-char characteristic_value[500] = "Hello world!";  // When client read characteristic, he get this value. You can also set this value in your code.
-char characteristic_received_value[500];         // When client write to characteristic , he set value of this. You can read it in code.
+char characteristic_value[100] = "Hello world!";  // When client read characteristic, he get this value. You can also set this value in your code.
+char characteristic_received_value[100];         // When client write to characteristic , he set value of this. You can read it in code.
 uint16_t min_length = 1;   // minimum length the client can write to a characterstic
 uint16_t max_length = 700; // maximum length the client can write to a characterstic
 
@@ -57,9 +59,11 @@ void startNVS() {
     ret = nvs_flash_init();
   }
 }
-void startBLE() {
+void startBLE(struct json_bus* data) {
   // Below is the sequence of APIs to be called to init/enable NimBLE host and ESP controller:
   ESP_LOGI(tag, "Starting BLE...");
+
+  data_bus = data;
 
   ESP_ERROR_CHECK(ret);
   ESP_ERROR_CHECK(nimble_port_init());
@@ -133,9 +137,11 @@ static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_g
   switch (ctxt->op) {
   // In case user accessed this characterstic to ( read ) its value
   case BLE_GATT_ACCESS_OP_READ_CHR: {
-    if(xQueueReceive(data_bus.queue_recieve, (void *)&json_string, 0) == pdPASS) {
-      printf("I received data from DSP");
-  
+    if(xQueueReceive(data_bus->queue_recieve, (void *)&json_string, 0) == pdPASS) {
+      printf("===========================\n");
+      printf("I received data from DSP\n");
+      printf("===========================\n");
+
       strcpy(characteristic_value, json_string);
     }
 
@@ -150,8 +156,10 @@ static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_g
   case BLE_GATT_ACCESS_OP_WRITE_CHR: {
     rc = gatt_svr_chr_write(ctxt->om, min_length, max_length, &characteristic_received_value, NULL); // Function "gatt_svr_chr_write" will fire.
 
-    // // handle_write_command(characteristic_received_value); // write commands
-    
+    printf("Recived: %s \n", characteristic_received_value);
+
+    if (xQueueSend(data_bus->queue_send, (void *)&characteristic_received_value, 10) != pdPASS) {}
+
     // clear the buffer
     memset(characteristic_received_value, 0, sizeof(characteristic_received_value)); 
 

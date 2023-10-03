@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cJSON.h"
+#include <cstdio>
 
 /*
   READ:
@@ -20,13 +21,18 @@
 class JSON {
   cJSON *root;
   cJSON *gps;
-  int distance;
-  double latitude, longitude;
+
+  // From Sensors
+  int distance=50;
+  double latitude=10000, longitude=10000;
+
+  // User (Application)
+  int direction;
 
   public:
     JSON();
-    void save_objects(char *json_string); // convert json data to objects and save it in the variables (here in the class)
+    int parse_json_objects(char *json_string); // convert json data to objects and save it in the variables (here in the class)
     void update_values(int Distance, double Latitude, double Longitude); // update the data
-    char print(); // print JSON data
+    char* print(); // print JSON data
     ~JSON();
 };
