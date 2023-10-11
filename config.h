@@ -5,8 +5,8 @@
 #include "freertos/queue.h"
 
 struct json_bus {
-  QueueHandle_t queue_send; // move - direction
-  QueueHandle_t queue_recieve; // distance - gps ...
+  QueueHandle_t queue_send;     // move - direction
+  QueueHandle_t queue_recieve;  // distance - gps ...
 };
 
 enum directions {

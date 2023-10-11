@@ -7,15 +7,17 @@ extern "C" {
 // ? ================ Declare some variables ================ ? //
 
 esp_err_t ret;
-static const char* tag = "Nahhas";
+static const char* tag = "RoboLand Car";
 static uint8_t own_addr_type;
 uint16_t conn_handle;
+uint16_t notification_handle;
 
-TaskHandle_t project_task_handle = NULL;
-uint16_t project_handle;
 char json_string[100];
-int value;
 struct json_bus* data_bus;
+
+// bool notify_state;  // When client subscribe to notifications, the value is set to 1.Check this value before sending notifictions.
+// char *notification; // You will set this value and send it as notification.
+
 
 // Utility function to log an array of bytes. //
 void print_bytes(const uint8_t* bytes, int len) {
@@ -35,11 +37,10 @@ void print_addr(const uint8_t* addr) {
 
 // ? ====================== Define UUID ===================== ? //
 
-
-// Service UUID: 9BAEF896-9532-AAAF-654F-4AF39DAB76C0
-static const ble_uuid128_t gatt_svr_svc_uuid = BLE_UUID128_INIT(0xc0, 0x76, 0xab, 0x9d, 0xf3, 0x4a, 0x4f, 0x65, 0xaf, 0xaa, 0x32, 0x95, 0x96, 0xf8, 0xae, 0x9b);
-// Characteristic 1: BA959EA8-1608-C48D-D642-6946BA0CF9EF
-static const ble_uuid128_t gatt_svr_chr_uuid = BLE_UUID128_INIT(0xef, 0xf9, 0x0c, 0xba, 0x46, 0x69, 0x42, 0xd6, 0x8d, 0xc4, 0x08, 0x16, 0xa8, 0x9e, 0x95, 0xba);
+// Service UUID: ???
+static const ble_uuid128_t gatt_svr_svc_uuid = BLE_UUID128_INIT(0xB8,0x8B,0xB7,0x2F,0x2C,0x8F,0x48,0xD0,0x8D,0xDB,0x75,0xC9,0xBA,0xD7,0xF8,0x88);
+// Characteristic: ???
+static const ble_uuid128_t gatt_svr_chr_uuid = BLE_UUID128_INIT(0x71,0xF2,0x89,0xB5,0xF7,0x63,0x47,0xF0,0xB5,0xF0,0x53,0x32,0x5D,0x08,0x4E,0x6C);
 
 // ? ==== Some variables used in service and characteristic declaration === ? //
 
@@ -62,6 +63,7 @@ void startNVS() {
 void startBLE(struct json_bus* data) {
   // Below is the sequence of APIs to be called to init/enable NimBLE host and ESP controller:
   ESP_LOGI(tag, "Starting BLE...");
+  printf("Nimble Core: %d \n", NIMBLE_CORE);
 
   data_bus = data;
 
@@ -97,12 +99,12 @@ void startBLE(struct json_bus* data) {
   assert(rc == 0);
 
   //  Set the name of this device
-  rc = ble_svc_gap_device_name_set("Nahhas Device");
+  rc = ble_svc_gap_device_name_set("RoboLand Car");
   assert(rc == 0);
 
   nimble_port_freertos_init(bleprph_host_task);
-  ESP_LOGI(tag, "Nahhas Device Successfuly initilazied");
-  ESP_LOGI("Nahhas - startBLE()", "Characteristic Value at end of startBLE() = %s", characteristic_value); // characteristic_value at end of startBLE
+  printf("startBLE(): Device Successfuly initilazied");
+  printf("startBLE(): Characteristic Value at end of startBLE() = %s", characteristic_value); // characteristic_value at end of startBLE
 }
 void stopBLE() {
   // Below is the sequence of APIs to be called to disable/deinit NimBLE host and ESP controller:
@@ -122,8 +124,8 @@ static const struct ble_gatt_svc_def gatt_svr_svcs[] = {
       {
         .uuid = &gatt_svr_chr_uuid.u,
         .access_cb = gatt__access,
-        .val_handle = &project_handle,
-        .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_WRITE,
+        .val_handle = &notification_handle,
+        .flags = BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_NOTIFY, // flags set permissions. In this case User can write, and get notified. 
       },
       { 0, /* No more characteristics in this service. This is necessary */ }
     },
@@ -136,22 +138,21 @@ static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_g
 
   switch (ctxt->op) {
   // In case user accessed this characterstic to ( read ) its value
-  case BLE_GATT_ACCESS_OP_READ_CHR: {
-    if(xQueueReceive(data_bus->queue_recieve, (void *)&json_string, 0) == pdPASS) {
-      printf("===========================\n");
-      printf("I received data from DSP\n");
-      printf("===========================\n");
+  // case BLE_GATT_ACCESS_OP_READ_CHR: {
+  //   if(xQueueReceive(data_bus->queue_recieve, (void *)&json_string, 0) == pdPASS) {
+  //     printf("===========================\n");
+  //     printf("I received data from DSP\n");
+  //     printf("===========================\n");
 
-      strcpy(characteristic_value, json_string);
-    }
+  //     strcpy(characteristic_value, json_string);
+  //   }
 
-    // Copy the JSON string to the BLE characteristic value.
-    rc = os_mbuf_append(ctxt->om, &characteristic_value, sizeof characteristic_value);
+  //   // Copy the JSON string to the BLE characteristic value.
+  //   rc = os_mbuf_append(ctxt->om, &characteristic_value, sizeof characteristic_value);
 
-    return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
-  }
-
-  
+  //   return rc == 0 ? 0 : BLE_ATT_ERR_INSUFFICIENT_RES;
+  // }
+ 
   // In case user accessed this characterstic to ( write )
   case BLE_GATT_ACCESS_OP_WRITE_CHR: {
     rc = gatt_svr_chr_write(ctxt->om, min_length, max_length, &characteristic_received_value, NULL); // Function "gatt_svr_chr_write" will fire.
@@ -170,6 +171,46 @@ static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_g
     return BLE_ATT_ERR_UNLIKELY;
   }
 }
+
+// ? ================== Notification  ================== ? //
+
+// void sendNotification() {
+//   int rc;
+//   struct os_mbuf *om;
+
+//   // This value is checked so that we don't send notifications if user has not subscribed to our notification handle.
+//   if (notify_state) {
+//     om = ble_hs_mbuf_from_flat(notification, sizeof(notification)); // Value of variable "notification" will be sent as notification.
+
+//     rc = ble_gattc_notify_custom(conn_handle, notification_handle, om);
+
+//     if (rc != 0) {
+//       printf("\n error notifying; rc\n");
+//     }
+//   } else {
+//     printf("user not subscribed to notifications.\n");
+//   }
+// }
+// void vTasksendNotification() {
+//   int rc;
+//   struct os_mbuf *om;
+//   while (1) {
+//     // This value is checked so that we don't send notifications if no one has subscribed to our notification handle.
+//     if (notify_state) {
+//       om = ble_hs_mbuf_from_flat(notification, sizeof(notification));
+//       rc = ble_gattc_notify_custom(conn_handle, notification_handle, om);
+//       printf("\n rc=%d\n", rc);
+
+//       if (rc != 0) {
+//         printf("\n error notifying; rc\n");
+//       }
+//     } else {
+//       printf("No one subscribed to notifications\n");
+//     }
+//     vTaskDelay(2000 / portTICK_PERIOD_MS);
+//   }
+//   vTaskDelete(NULL);
+// }
 
 // ? ================== No need to change (I think)  ================== ? //
 
@@ -405,8 +446,7 @@ void bleprph_host_task(void* param) {
   nimble_port_freertos_deinit();
 }
 
-// ? ===================================================== ? //        
-
+// ? ===================================================== ? //
 
 #ifdef __cplusplus
 }

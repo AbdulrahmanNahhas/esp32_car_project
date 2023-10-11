@@ -107,7 +107,8 @@
     "streambuf": "cpp",
     "thread": "cpp",
     "cinttypes": "cpp",
-    "typeinfo": "cpp"
+    "typeinfo": "cpp",
+    "nvs_flash.h": "c"
   },
   "idf.flashType": "UART",
   "idf.port": "/dev/cu.usbserial-0001",
