@@ -204,23 +204,24 @@ void vTasksendNotification(void *parameter) {
   while (1) {
     // This value is checked so that we don't send notifications if no one has subscribed to our notification handle.
     if (xQueueReceive(data_bus->queue_recieve, (void *)&json_string, 0) == pdPASS) {
-      printf("I received data from DSP\n");
+      // printf("I received data from DSP\n");
       strcpy(notification, json_string);
     }
+    
     if (notify_state) {
       om = ble_hs_mbuf_from_flat(notification, sizeof(notification));
       rc = ble_gatts_notify_custom(conn_handle, notification_handle, om);
-      // printf("\n rc = %d\n", rc);
-  
+
       if (rc != 0) {
-        printf("Error notifying (RC != 0)\n");
+        printf("Error notifying (RC != 0) \n");
       } else {
-        printf("Notification Sent, (RC = 0)\n");
+        printf("Notification Sent, (RC = 0) \n");
+        // printf("Message: %s\n\n", notification);
       }
     } else {
       printf("No one subscribed to notifications\n");
     }
-    vTaskDelay(pdMS_TO_TICKS(2000));
+    vTaskDelay(pdMS_TO_TICKS(200));
   }
   vTaskDelete(NULL);
 }

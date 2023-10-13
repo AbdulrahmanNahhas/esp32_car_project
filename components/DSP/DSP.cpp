@@ -37,6 +37,6 @@ void DSP::dsb_task(void *parameter) {
       printf("ERROR: Could not put item on delay queue.\n");
     }
 
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(200));
   }
 }
