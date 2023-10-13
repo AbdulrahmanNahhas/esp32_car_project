@@ -38,6 +38,9 @@ void print_bytes(const uint8_t *bytes, int len);
 void print_addr(const uint8_t *addr);
 
 extern TaskHandle_t xHandle;
+extern char notification[100];
+extern bool notify_state;
+
 struct ble_hs_cfg;
 struct ble_gatt_register_ctxt;
 
@@ -47,21 +50,7 @@ void startBLE(struct json_bus* data); /* Starts the BLE stack and initializes th
 
 void stopBLE(); /* Stops the BLE stack and deinitializes the BLE host task. */
 
-static int bleprph_gap_event(struct ble_gap_event* event, void* arg); /* Callback function for BLE GAP events. This function handles various GAP events, such as connection requests, disconnections, and connection updates. */
-
-static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg); // Callback function. When ever characrstic will be accessed by user, this function will execute
-
-static int gatt_svr_chr_write(struct os_mbuf* om, uint16_t min_len, uint16_t max_len, void* dst, uint16_t* len); /* Callback function. When ever user write to this characterstic,this function will execute */
-
-static void bleprph_on_reset(int reason); /* Callback function for BLE reset events. This function can be used to handle any special actions that need to be taken when the BLE stack is reset. */
-
 void bleprph_host_task(void* param); /* BLE host task. This task handles BLE events, such as incoming GATT requests, sending notifications to the client, and processing other BLE-related tasks. */
-
-static void bleprph_on_sync(void); /* Callback function for BLE sync events. This function can be used to handle any special actions that need to be taken when the BLE stack is synchronized. */
-
-static void bleprph_print_conn_desc(struct ble_gap_conn_desc* desc); /* Prints a connection descriptor. This function can be used for debugging purposes. */
-
-static void bleprph_advertise(void); /* Starts advertising the device. This function makes the device visible to clients so that they can connect to it. */
 
 void startNVS(); /* Starts the NVS flash storage system. This function must be called before any NVS operations can be performed. */
 
@@ -70,6 +59,9 @@ void gatt_svr_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg); /* Ca
 int gatt_svr_init(void); /* Initializes the GATT server. This function must be called before any GATT services can be registered or used. */
 
 // // void handle_write_command(char *command); /* Handles a write command from the client. This function can be used to implement various features on the device, such as controlling LEDs or motors. */
+
+void sendNotification();
+void vTasksendNotification(void *parameter);
 
 #ifdef __cplusplus
 }

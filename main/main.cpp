@@ -1,5 +1,4 @@
 #include "main.h"
-#include <esp_system.h>
 
 // Create a static instance of the Main class.
 static Main main_app;
@@ -19,6 +18,9 @@ esp_err_t Main::setup(void) {
 
   startNVS();
   startBLE(&data_bus);
+
+  // ? Start the FreeRTOS task to notify the client
+  xTaskCreate(vTasksendNotification, "vTasksendNotification", 4096, NULL, 1, NULL);
 
   return status;
 }

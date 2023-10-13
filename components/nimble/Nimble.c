@@ -15,9 +15,8 @@ uint16_t notification_handle;
 char json_string[100];
 struct json_bus* data_bus;
 
-// bool notify_state;  // When client subscribe to notifications, the value is set to 1.Check this value before sending notifictions.
-// char *notification; // You will set this value and send it as notification.
-
+bool notify_state;  // When client subscribe to notifications, the value is set to 1. Check this value before sending notifictions.
+char notification[100] = "hello world"; // You will set this value and send it as notification.
 
 // Utility function to log an array of bytes. //
 void print_bytes(const uint8_t* bytes, int len) {
@@ -34,6 +33,15 @@ void print_addr(const uint8_t* addr) {
   MODLOG_DFLT(INFO, "%02x:%02x:%02x:%02x:%02x:%02x",
     u8p[5], u8p[4], u8p[3], u8p[2], u8p[1], u8p[0]);
 }
+
+// ? =================== Declare Functions =================== ? //
+static int bleprph_gap_event(struct ble_gap_event* event, void* arg); /* Callback function for BLE GAP events. This function handles various GAP events, such as connection requests, disconnections, and connection updates. */
+static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_gatt_access_ctxt* ctxt, void* arg); // Callback function. When ever characrstic will be accessed by user, this function will execute
+static int gatt_svr_chr_write(struct os_mbuf* om, uint16_t min_len, uint16_t max_len, void* dst, uint16_t* len); /* Callback function. When ever user write to this characterstic,this function will execute */
+static void bleprph_on_reset(int reason); /* Callback function for BLE reset events. This function can be used to handle any special actions that need to be taken when the BLE stack is reset. */
+static void bleprph_on_sync(void); /* Callback function for BLE sync events. This function can be used to handle any special actions that need to be taken when the BLE stack is synchronized. */
+static void bleprph_print_conn_desc(struct ble_gap_conn_desc* desc); /* Prints a connection descriptor. This function can be used for debugging purposes. */
+static void bleprph_advertise(void); /* Starts advertising the device. This function makes the device visible to clients so that they can connect to it. */
 
 // ? ====================== Define UUID ===================== ? //
 
@@ -174,43 +182,48 @@ static int gatt__access(uint16_t conn_handle, uint16_t attr_handle, struct ble_g
 
 // ? ================== Notification  ================== ? //
 
-// void sendNotification() {
-//   int rc;
-//   struct os_mbuf *om;
+void sendNotification() {
+  int rc;
+  struct os_mbuf *om;
 
-//   // This value is checked so that we don't send notifications if user has not subscribed to our notification handle.
-//   if (notify_state) {
-//     om = ble_hs_mbuf_from_flat(notification, sizeof(notification)); // Value of variable "notification" will be sent as notification.
+  // This value is checked so that we don't send notifications if user has not subscribed to our notification handle.
+  if (notify_state) {
+    om = ble_hs_mbuf_from_flat(notification, sizeof(notification)); // Value of variable "notification" will be sent as notification.
+    rc = ble_gatts_notify_custom(conn_handle, notification_handle, om);
 
-//     rc = ble_gattc_notify_custom(conn_handle, notification_handle, om);
-
-//     if (rc != 0) {
-//       printf("\n error notifying; rc\n");
-//     }
-//   } else {
-//     printf("user not subscribed to notifications.\n");
-//   }
-// }
-// void vTasksendNotification() {
-//   int rc;
-//   struct os_mbuf *om;
-//   while (1) {
-//     // This value is checked so that we don't send notifications if no one has subscribed to our notification handle.
-//     if (notify_state) {
-//       om = ble_hs_mbuf_from_flat(notification, sizeof(notification));
-//       rc = ble_gattc_notify_custom(conn_handle, notification_handle, om);
-//       printf("\n rc=%d\n", rc);
-
-//       if (rc != 0) {
-//         printf("\n error notifying; rc\n");
-//       }
-//     } else {
-//       printf("No one subscribed to notifications\n");
-//     }
-//     vTaskDelay(2000 / portTICK_PERIOD_MS);
-//   }
-//   vTaskDelete(NULL);
-// }
+    if (rc != 0) {
+      printf("\n error notifying; rc\n");
+    }
+  } else {
+    printf("user not subscribed to notifications.\n");
+  }
+}
+void vTasksendNotification(void *parameter) {
+  int rc;
+  struct os_mbuf *om;
+  while (1) {
+    // This value is checked so that we don't send notifications if no one has subscribed to our notification handle.
+    if (xQueueReceive(data_bus->queue_recieve, (void *)&json_string, 0) == pdPASS) {
+      printf("I received data from DSP\n");
+      strcpy(notification, json_string);
+    }
+    if (notify_state) {
+      om = ble_hs_mbuf_from_flat(notification, sizeof(notification));
+      rc = ble_gatts_notify_custom(conn_handle, notification_handle, om);
+      // printf("\n rc = %d\n", rc);
+  
+      if (rc != 0) {
+        printf("Error notifying (RC != 0)\n");
+      } else {
+        printf("Notification Sent, (RC = 0)\n");
+      }
+    } else {
+      printf("No one subscribed to notifications\n");
+    }
+    vTaskDelay(pdMS_TO_TICKS(2000));
+  }
+  vTaskDelete(NULL);
+}
 
 // ? ================== No need to change (I think)  ================== ? //
 
@@ -401,6 +414,30 @@ static int bleprph_gap_event(struct ble_gap_event* event, void* arg) {
     MODLOG_DFLT(INFO, "advertise complete; reason=%d",
       event->adv_complete.reason);
     bleprph_advertise();
+    return 0;
+
+  case BLE_GAP_EVENT_SUBSCRIBE:
+    printf("\n⏺︎================⏺︎================⏺︎\n");
+    MODLOG_DFLT(INFO, "subscribe event; cur_notify=%d\n value handle; "
+                      "val_handle=%d\n"
+                      "conn_handle=%d attr_handle=%d "
+                      "reason=%d prevn=%d curn=%d previ=%d curi=%d\n",
+                event->subscribe.conn_handle,
+                event->subscribe.attr_handle,
+                event->subscribe.reason,
+                event->subscribe.prev_notify,
+                event->subscribe.cur_notify,
+                event->subscribe.cur_notify, notification_handle, // !! Client Subscribed to notification_handle
+                event->subscribe.prev_indicate,
+                event->subscribe.cur_indicate);
+    printf("\n⏺︎================⏺︎================⏺︎\n");
+
+    if (event->subscribe.attr_handle == notification_handle) {
+      printf("\nSubscribed with notification_handle =%d\n", event->subscribe.attr_handle);
+      notify_state = event->subscribe.cur_notify; // !! As the client is now subscribed to notifications, the value is set to 1
+      printf("notify_state=%d\n", notify_state);
+    }
+
     return 0;
 
   case BLE_GAP_EVENT_MTU:

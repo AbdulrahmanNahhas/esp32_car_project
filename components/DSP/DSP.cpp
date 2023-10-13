@@ -32,7 +32,7 @@ void DSP::dsb_task(void *parameter) {
     dsp->json.update_values(50, 12204, -12103);
     strcpy(dsp->json_string, dsp->json.get_json_string());
 
-    // Send data to Nimble
+    // // Send data to Nimble
     if (xQueueSend(dsp->data_bus->queue_recieve, (void *)&dsp->json_string, 10) != pdPASS) {
       printf("ERROR: Could not put item on delay queue.\n");
     }
