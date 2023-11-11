@@ -7,18 +7,18 @@
 #include <iostream>
 #include <cstring>
 
+#include "UltrasonicSensor.h"
 #include "../../../config.h"
 #include "JSON.h"
 
-// : public Task
 class DSP {
-  char json_string[100];
-  JSON json;
   struct json_bus* data_bus;
+  char json_string[100];
   int value;
+  JSON json;
+  int distance=0;
 
   public:
     DSP(struct json_bus* data);
-    // void run(void* data);
     static void dsb_task(void *parameter);
 };
