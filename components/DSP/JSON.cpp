@@ -45,10 +45,10 @@ int JSON::parse_json_objects(char *json_string) {
   }
 
 */
-void JSON::update_values(int Distance, double Latitude, double Longitude) {
-  latitude += 1; // // Latitude
-  longitude += 1; // // Longitude
-  distance += 2; // // Distance
+void JSON::update_values(float Distance, double Latitude, double Longitude) {
+  distance = Distance;
+  latitude = Latitude;
+  longitude = Longitude;
 
   cJSON_SetNumberValue(cJSON_GetObjectItem(gps, "latitude"), latitude);
   cJSON_SetNumberValue(cJSON_GetObjectItem(gps, "longitude"), longitude);
@@ -61,6 +61,7 @@ void JSON::print() {
   printf(json_string);
   printf("\n");
 }
+
 char* JSON::get_json_string() {
   char* json_string = cJSON_Print(root);
   return json_string;

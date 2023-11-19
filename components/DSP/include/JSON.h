@@ -23,7 +23,7 @@ class JSON {
   cJSON *gps;
 
   // From Sensors
-  int distance=50;
+  float distance=50.5;
   double latitude=36, longitude=36;
 
   // From User (Application)
@@ -31,9 +31,9 @@ class JSON {
 
   public:
     JSON();
-    int parse_json_objects(char *json_string);                           // convert json data to objects and save it in the variables (here in the class)
-    void update_values(int Distance, double Latitude, double Longitude); // update the data
-    void print();                                                        // print JSON data
-    char* get_json_string();                                             // print JSON data
+    int parse_json_objects(char *json_string);                              // convert json data to objects and save it in the variables (here in the class)
+    void update_values(float Distance, double Latitude, double Longitude);  // update the data
+    void print();                                                           // print JSON data
+    char* get_json_string();                                                // print JSON data
     ~JSON();
 };
