@@ -1,5 +1,5 @@
 idf_component_register (
   SRCS "DSP.cpp" "JSON.cpp"
   INCLUDE_DIRS "include"
-  REQUIRES freertos json controller UltrasonicSensor
+  REQUIRES freertos json controller ultra
 )
