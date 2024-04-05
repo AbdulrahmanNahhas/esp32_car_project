@@ -1,17 +1,29 @@
-# Car Project
+## ESP32 Car Controller with Mobile App (Bluetooth)   
 
-## Requirments:
-- ESP32
-- Car Kit (4 Rpm Motor and Wheel Set + Battery)
-- Pair Motor Driver Board with a Voltage Regulator (L298N)
-- NEO-6MV2 GPS Module
-- Ultrasonic sensor
+This is my first project using `ESP-IDF` and `ESP32`, the project aims to develop a simple control system for a car using an ESP32 microcontroller. The car will be controlled remotely via Bluetooth using the mobile application.
 
-## Project Components:
-| Component | Description |
-|---|---|
-| GPIO | General Purpose Input Output is an interface that allows you to read and write digital signals from and to pins on a microcontroller.  |
-| GPS | Global Positioning System (GPS) is a satellite-based navigation system that allows you to determine the car's location on Earth. GPS receivers can be used to track your location in real-time or to store your location for later use. |
-| Motor_Control | Motor control components allow you to control the speed and direction of motors. |
-| Nimble | Nimble is a Bluetooth Low Energy (BLE) stack that allows you to develop BLE devices. |
-| Ultrasonic |  Ultrasonic distance sensors are used to measure the distance to an object by emitting and detecting ultrasonic sound waves.  |
+## Hardware Components:
+
+1. ESP32 Board
+2. L298N Motor Driver
+3. **4** DC Motors
+4. **3** Lithium ion batteries (3.7v 1200mah)
+5. Ultrasonic Sensor
+6. GPS Module (*I used NEO-6MV2*)
+8. Mobile Device
+
+## Software:
+
+-   ESP-IDF (development framework for ESP32)
+-   Mobile App (developed using ~~react-native~~ **Thunkable**)
+
+## Project Structure:
+
+The `components` directory houses the project's core functionalities:
+
+-   `controller`: Contains logic for controlling the car's movement.
+-   `DSP`: Digital Sensor Process (DSP) Handles motor driver control and data sending/reading.
+-   `Nimble`: Manages Bluetooth Low Energy communication with the mobile app.
+-   `ultrasonic`: Handles communication with the ultrasonic sensor for obstacle detection.
+-   `GPS`: Coming Soon...
+
