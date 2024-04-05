@@ -3,6 +3,8 @@
 DSP::DSP(struct json_bus* data) {
   data_bus = data;
 
+  controller.init();
+
   printf("DSB Task Created!!");
   xTaskCreatePinnedToCore(&dsb_task, "DSP_Task", 4096, (void*)this, 1, NULL, 1);
 
@@ -40,7 +42,7 @@ void DSP::ultra_task(void* parameter) {
       }
     }
     else
-      printf("Distance: %0.04f cm\n", distance * 100);
+      // printf("Distance: %0.04f cm\n", distance * 100);
 
     vTaskDelay(pdMS_TO_TICKS(500));
   }
@@ -55,14 +57,15 @@ void DSP::dsb_task(void* parameter) {
       printf("===========================\n");
       printf("I received data from nimble\n");
 
+      // Convert data to objects
       dsp->value = dsp->json.parse_json_objects(dsp->json_string);
 
+      // Printing
       printf("Values Updated From User \n");
       printf("direction value: %d \n", dsp->value);
 
-      if (dsp->value == directions::stop) {
-        printf("Stopping...\n");
-      }
+      // Controlling Motor
+      dsp->controller.control_motor(dsp->value);
 
       printf("===========================\n");
     }

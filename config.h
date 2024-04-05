@@ -9,12 +9,12 @@ struct json_bus {
   QueueHandle_t queue_recieve;  // distance - gps ...
 };
 
-enum directions {
-  stop,     // 0
-  forward,  // 1
-  backward, // 2
-  right,    // 3
-  left      // 4
+enum MotorDirection {
+  STOP,     // 0
+  FORWARD,  // 1
+  BACKWARD, // 2
+  RIGHT,    // 3
+  LEFT      // 4
 };
 
 #endif

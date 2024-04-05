@@ -17,6 +17,7 @@ extern "C" {
 class Main final {
   struct json_bus data_bus;
   DSP *dsp;
+  Controller controller;
 
 public:
   esp_err_t setup(void);  // this function is called once when the application starts up.

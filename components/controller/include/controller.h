@@ -1,27 +1,19 @@
 #pragma once
 
-#include <stdio.h>
-#include <string.h>
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include "esp_log.h"
 #include "driver/gpio.h"
-#include "esp_attr.h"
-
-// mcpwm = Motor Control Pulse Width Modulator
-#include "driver/mcpwm.h"
-#include "soc/mcpwm_periph.h"
 #include "../../../config.h"
 
-#define GPIO_PWM0A_OUT 15
-#define GPIO_PWM0B_OUT 16
+#define motor_pin1 GPIO_NUM_18
+#define motor_pin2 GPIO_NUM_19
+#define motor_pin3 GPIO_NUM_27
+#define motor_pin4 GPIO_NUM_26
 
 class Controller {
-  // int direction = 0;
+private:
+  const char* TAG = "CONTROLLER";
 
 public:
-  Controller();
-
-  void initialize();
+  void init();
   void control_motor(int direction);
 };

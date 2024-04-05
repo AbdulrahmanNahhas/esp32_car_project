@@ -7,26 +7,25 @@
     "**/CVS": true,
     "**/.DS_Store": true,
     "**/Thumbs.db": true,
+    "**/.trunk/*actions/": true,
+    "**/.trunk/*logs/": true,
+    "**/.trunk/*notifications/": true,
+    "**/.trunk/*out/": true,
+    "**/.trunk/*plugins/": true,
     ".vscode": true,
     ".devcontainer": true,
     "sdkconfig.old": true,
-    "README.md": true,
     "dependencies.lock": true,
-    "managed_components": true,
-    "main/Kconfig.projbuild": true,
     "build": true,
-    "sdkconfig": true
+    "managed_components": true
   },
   "hide-files.files": [
     ".vscode",
     ".devcontainer",
     "sdkconfig.old",
-    "README.md",
     "dependencies.lock",
-    "managed_components",
-    "main/Kconfig.projbuild",
     "build",
-    "sdkconfig"
+    "managed_components"
   ],
   "C_Cpp.errorSquiggles": "disabled",
   "idf.adapterTargetName": "esp32",

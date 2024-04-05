@@ -12,6 +12,7 @@
 
 #include "../../../config.h"
 #include "ultrasonic.h"
+#include "controller.h"
 #include "JSON.h"
 
 // ======  For Ultrasonic ====== //
@@ -27,6 +28,8 @@ private:
 
   JSON json;
   char json_string[100];
+
+  Controller controller;
 
 public:
   DSP(struct json_bus* data);
