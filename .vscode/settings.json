@@ -17,7 +17,9 @@
     "sdkconfig.old": true,
     "dependencies.lock": true,
     "build": true,
-    "managed_components": true
+    "managed_components": true,
+    "main/Kconfig.projbuild": true,
+    "main/idf_component.yml": true
   },
   "hide-files.files": [
     ".vscode",
@@ -25,7 +27,9 @@
     "sdkconfig.old",
     "dependencies.lock",
     "build",
-    "managed_components"
+    "managed_components",
+    "main/Kconfig.projbuild",
+    "main/idf_component.yml"
   ],
   "C_Cpp.errorSquiggles": "disabled",
   "idf.adapterTargetName": "esp32",

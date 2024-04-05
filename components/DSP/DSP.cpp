@@ -8,8 +8,8 @@ DSP::DSP(struct json_bus* data) {
   printf("DSB Task Created!!");
   xTaskCreatePinnedToCore(&dsb_task, "DSP_Task", 4096, (void*)this, 1, NULL, 1);
 
-  printf("HCSR04 Task Created!!");
-  xTaskCreate(ultra_task, "Ultrasonic_Task", configMINIMAL_STACK_SIZE * 3, NULL, 5, NULL);
+  // printf("HCSR04 Task Created!!");
+  // xTaskCreate(ultra_task, "Ultrasonic_Task", configMINIMAL_STACK_SIZE * 3, NULL, 5, NULL);
 }
 
 void DSP::ultra_task(void* parameter) {

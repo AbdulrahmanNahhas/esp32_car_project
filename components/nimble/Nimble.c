@@ -213,13 +213,13 @@ void vTasksendNotification(void *parameter) {
       rc = ble_gatts_notify_custom(conn_handle, notification_handle, om);
 
       if (rc != 0) {
-        printf("Error notifying (RC != 0) \n");
+        // printf("Error notifying (RC != 0) \n");
       } else {
-        printf("Notification Sent, (RC = 0) \n");
+        // printf("Notification Sent, (RC = 0) \n");
         // printf("Message: %s\n\n", notification);
       }
     } else {
-      printf("No one subscribed to notifications\n");
+      // printf("No one subscribed to notifications\n");
     }
     vTaskDelay(pdMS_TO_TICKS(200));
   }
