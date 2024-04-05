@@ -7,7 +7,7 @@ This is my first project using `ESP-IDF` and `ESP32`, the project aims to develo
 1. ESP32 Board
 2. L298N Motor Driver
 3. **4** DC Motors
-4. **3** Lithium ion batteries (3.7v 1200mah)
+4. **3** Lithium ion batteries (3.7v / 1200mah)
 5. Ultrasonic Sensor
 6. GPS Module (*I used NEO-6MV2*)
 8. Mobile Device

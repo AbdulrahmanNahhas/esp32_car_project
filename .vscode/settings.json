@@ -14,7 +14,6 @@
     "**/.trunk/*plugins/": true,
     "sdkconfig.old": true,
     "sdkconfig": true,
-    ".gitignore": true,
     "build": true,
     ".vscode": true,
     ".devcontainer": true,
@@ -23,7 +22,6 @@
   "hide-files.files": [
     "sdkconfig.old",
     "sdkconfig",
-    ".gitignore",
     "build",
     ".vscode",
     ".devcontainer",
